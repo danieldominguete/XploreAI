@@ -1,0 +1,91 @@
+---
+description: Padrões Python para o projeto XploreAI
+globs: **/*.py
+alwaysApply: false
+---
+
+# Python — XploreAI
+
+## Estrutura
+
+- Biblioteca em **`src/xploreai/`**; receitas em **`cookbook/`** (fora do pacote PyPI)
+- Módulos de produção: **`xai_<domínio>.py`** por pacote (`environment`, `log`, `utils`, …); import público `from xploreai.<pacote> import ...` ou `from xploreai.<pacote>.xai_<nome> import ...`
+- Testes em **`tests/`** espelhando `src/xploreai/` — `uv run pytest`
+- Configuração em **`pyproject.toml`** + **`uv.lock`** (uv); Python **3.12**
+- **`references/`** — somente leitura; não editar ao seguir estas regras
+
+## Escopo das regras
+
+- **`src/xploreai/`** — contrato completo (tipos, docstrings, logging, testes)
+- **`cookbook/`** — scripts de experimento (LangChain, LLMs); reutilizar a biblioteca quando possível; pode ser mais permissivo que a lib, mas sem segredos no código
+- **`tests/`** — pytest alinhado ao espelho de `src/xploreai/`
+
+## Estilo
+
+- PEP 8; linhas ~88 caracteres quando fizer sentido; aspas duplas
+- `snake_case` funções/variáveis; `PascalCase` classes
+- Imports: stdlib → third-party → `xploreai` (agrupamento isort quando houver formatter)
+- Preferir **`pathlib.Path`** a strings de caminho
+- Em **`src/xploreai/`**, evitar `sys.path` manual; o pacote deve importar via instalação editável (`uv sync`)
+
+## Type hints
+
+- Anotar parâmetros e retorno em funções públicas da biblioteca
+- Preferir **`int | float`**, **`str | None`** (3.12); `Optional[T]` só se já for o padrão do arquivo
+- `collections.abc` para sequências/mappings genéricos; `dataclasses` ou Pydantic quando modelar dados estruturados
+
+## Documentação de funções
+
+Toda função **pública** em `src/xploreai/` deve ter docstring **Google style** com:
+
+- Resumo em uma linha
+- `Args` — parâmetros
+- `Returns` — quando aplicável
+- `Raises` — exceções esperadas
+- `Note` ou `Example` — premissas ou uso não óbvio
+
+Funções privadas (`_prefix`) podem ter docstring de uma linha.
+
+Comentários inline (`#`) só para lógica não óbvia — preferir docstring no contrato da API.
+
+Ao criar ou refatorar, **atualizar a docstring**.
+
+Referência de estilo: `src/xploreai/utils/xai_environment.py`, `src/xploreai/log/xai_log.py`, `src/xploreai/utils/xai_memory.py`.
+
+```python
+def convert_bytes(size_bytes: int | float, to_unit: str = "GB") -> float:
+    """Convert a byte count to the requested binary unit (KiB-based).
+
+    Args:
+        size_bytes: Size in bytes.
+        to_unit: Target unit (B, KB, MB, GB, or TB; case-insensitive).
+
+    Returns:
+        Size expressed in the requested unit.
+
+    Raises:
+        ValueError: When ``to_unit`` is not supported.
+    """
+```
+
+## Boas práticas
+
+- Sem `bare except`; capturar exceções específicas
+- **`logging`** (via `xai_log` quando fizer sentido) em vez de `print` em `src/xploreai/`
+- Context managers para arquivos e conexões
+- Funções focadas; evitar módulos monolíticos (> ~500 linhas)
+- Chaves de API (`OPENAI_API_KEY`, `GROQ_API_KEY`, etc.) e tokens **somente** via ambiente (`.env`); no código usar `os.environ` ou helpers da lib, nunca literais versionados
+- Cookbook: documentar modelo, temperatura e premissas do prompt quando relevante; preferir funções reutilizáveis na lib para lógica estável
+
+## Versionamento
+
+- Commits: **`uv run cz commit`** (Conventional Commits), quando Commitizen estiver no projeto
+- Release: **`uv run cz bump`** (versão em `pyproject.toml`, `CHANGELOG.md`, tag)
+- Hook opcional de mensagem: **`uv run cz install --hook-type commit-msg`**
+
+## Dependências
+
+- Runtime: **`uv add <pacote>`** (atualiza `pyproject.toml` e `uv.lock`)
+- Dev-only: **`uv add --group dev <pacote>`** (ex.: `commitizen`, `nbstripout`)
+- Não adicionar `requirements.txt` na raiz do projeto
+- Dependências de IA (LangChain, provedores de LLM): adicionar via **`uv add`** conforme receitas em `cookbook/` exigirem; manter o pacote **`xploreai`** enxuto — só promover para `src/xploreai/` o que for API estável e reutilizável
