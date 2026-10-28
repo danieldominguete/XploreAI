@@ -1,12 +1,12 @@
 [project]
 name = "xploreai"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Library and cookbook codes for AI Engineering Projects"
 readme = "README.md"
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    { name = "Daniel Dominguete", email = "daniel.dominguete@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "pytest>=9.2.0",
 ]
@@ -22,3 +22,11 @@ build-backend = "uv_build"
 dev = [
     "commitizen>=4.19.3",
 ]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_file = "CHANGELOG.md"
+major_version_zero = true
