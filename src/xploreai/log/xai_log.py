@@ -18,8 +18,8 @@ from typing import Any, Final
 
 import psutil
 
-from xploreds.io.xds_file import create_folder
-from xploreds.utils.xds_memory import convert_bytes
+from xploreai.io.xai_file import create_folder
+from xploreai.utils.xai_memory import convert_bytes
 
 PathLike = str | Path
 

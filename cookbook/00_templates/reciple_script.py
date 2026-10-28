@@ -6,47 +6,48 @@ Standard pipeline template for scripts under ``cookbook/``.
 Author: daniel.dominguet@gmail.com
 """
 
+# %%
 from pathlib import Path
-
 from dotenv import load_dotenv
 
-from xploreds.log.xds_log import XploreDSLogging, create_logger
-from xploreds.utils.xds_environment import resolve_project_root
+from xploreai.log.xai_log import create_logger
+from xploreai.utils.xai_environment import resolve_project_root
 
 
-def main() -> None:
-    """Execute the cookbook script pipeline."""
-    script_path = Path(__file__).resolve()
-    project_root = resolve_project_root(script_path.parent)
+# -----------------------------------------------------------------------------
+# PARAMETERS CONFIGURATION
+# -----------------------------------------------------------------------------
+var_example = "example"
 
-    # Loading environment variables
-    load_dotenv(project_root / ".env")
+# -----------------------------------------------------------------------------
+# SCRIPT EXECUTION
+# -----------------------------------------------------------------------------
+# Environment setup
+# -----------------------------------------------------------------------------
+# Getting project root and script path
+script_path = Path(__file__).resolve()
+project_root = resolve_project_root(script_path.parent)
 
-    # Creating logger
-    log = create_logger(project_root, script_path)
+# Loading environment variables
+load_dotenv(project_root / ".env")
 
-    # Initializing run
-    log.init_run()
-    log.log_environment_setup()
+# Creating logger
+log = create_logger(project_root, script_path)
 
-    # ================================
-    # Parameters configuration
-    # ================================
-    var_example = "example"
+# Initializing run
+log.init_run()
+log.log_environment_setup()
+# %%
+# -----------------------------------------------------------------------------
+# Pipeline execution
+# -----------------------------------------------------------------------------
+try:
 
-    try:
-        # ================================
-        # Pipeline steps
-        # ================================
-        log.title("Pipeline steps")
-        # Pipeline steps
-        log.info(f"Variable example: {var_example}")
-    finally:
-        # ================================
-        # Closing run
-        # ================================
-        log.close_run()
-
-
-if __name__ == "__main__":
-    main()
+    log.title("Pipeline steps")
+    # Pipeline steps
+    log.info(f"Variable example: {var_example}")
+except Exception as exc:
+    log.error("Pipeline execution failed: %s", exc, exc_info=True)
+    raise
+finally:
+    log.close_run()
